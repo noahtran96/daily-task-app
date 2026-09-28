@@ -16,6 +16,3 @@ app.listen(PORT, () => {
     `TypeScript Backend Server is running at: http://localhost:${PORT}`,
   );
 });
-
-testing;
-testing;
