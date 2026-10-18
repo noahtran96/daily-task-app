@@ -1,122 +1,94 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState } from "react";
+import type { Task } from "./types";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: 1, title: "Learn React", isCompleted: true },
+    { id: 2, title: "Sleep", isCompleted: false },
+  ]);
+
+  const [inputTitle, setInputTitle] = useState("");
+
+  const handleAddTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputTitle.trim()) return;
+
+    const newTask: Task = {
+      id: Date.now(),
+      title: inputTitle,
+      isCompleted: false,
+    };
+
+    setTasks([...tasks, newTask]);
+    setInputTitle("");
+  };
+
+  const handleToggleTask = (id: number) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, isCompleted: !task.isCompleted } : task,
+      ),
+    );
+  };
+
+  const handleDeleteTask = (id: number) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+    <div className="max-w-md mx-auto mt-12 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
+        Daily Task Manager
+      </h2>
+
+      {/* Create task form */}
+      <form onSubmit={handleAddTask} className="flex gap-2 mb-6">
+        <input
+          type="text"
+          placeholder="Input new task..."
+          value={inputTitle}
+          onChange={(e) => setInputTitle(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+        />
         <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 p-2 rounded-lg font-medium transition-colors cursor-pointer text-sm shadow-sm"
         >
-          Count is {count}
+          Create
         </button>
-      </section>
+      </form>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Task list */}
+      <ul className="space-y-3">
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100/80 rounded-xl transition-all border border-gray-100"
+          >
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={task.isCompleted}
+                onChange={() => handleToggleTask(task.id)}
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+              />
+              <span
+                className={`text-sm font-medium transition-all ${task.isCompleted ? "line-through text-gray-400" : "text-gray-700"}`}
+              >
+                {task.title}
+              </span>
+            </div>
+            <button
+              onClick={() => handleDeleteTask(task.id)}
+              className="text-red-500 hover:text-red-700 text-sm font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50 transition-colors"
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
