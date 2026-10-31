@@ -21,7 +21,7 @@ app.get("/api/tasks", async (req, res) => {
 });
 
 // POST
-app.post("api/tasks", async (req, res) => {
+app.post("/api/tasks", async (req, res) => {
   try {
     const { title } = req.body;
     if (!title || !title.trim()) {

@@ -1,38 +1,84 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Task } from "./types";
 
-function App() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, title: "Learn React", isCompleted: true },
-    { id: 2, title: "Sleep", isCompleted: false },
-  ]);
+const API_URL = "http://localhost:5000/api/tasks";
 
+function App() {
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [inputTitle, setInputTitle] = useState("");
 
-  const handleAddTask = (e: React.FormEvent) => {
+  // GET
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error("Failed to fetch tasks");
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error("Failed to fetch tasks:", error);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
+  // POST
+  const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputTitle.trim()) return;
 
-    const newTask: Task = {
-      id: Date.now(),
-      title: inputTitle,
-      isCompleted: false,
-    };
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: inputTitle }),
+      });
 
-    setTasks([...tasks, newTask]);
-    setInputTitle("");
+      if (response.ok) {
+        const newTask = await response.json();
+        setTasks([newTask, ...tasks]);
+        setInputTitle("");
+      }
+    } catch (error) {
+      console.error("Failed to add task:", error);
+    }
   };
 
-  const handleToggleTask = (id: number) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, isCompleted: !task.isCompleted } : task,
-      ),
-    );
+  // PATCH
+  const handleToggleTask = async (id: number, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isCompleted: !currentStatus }),
+      });
+
+      if (response.ok) {
+        setTasks(
+          tasks.map((task) =>
+            task.id === id ? { ...task, isCompleted: !currentStatus } : task,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update task:", error);
+    }
   };
 
-  const handleDeleteTask = (id: number) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  // DELETE
+  const handleDeleteTask = async (id: number) => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setTasks(tasks.filter((task) => task.id !== id));
+      }
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
   };
 
   return (
@@ -69,7 +115,7 @@ function App() {
               <input
                 type="checkbox"
                 checked={task.isCompleted}
-                onChange={() => handleToggleTask(task.id)}
+                onChange={() => handleToggleTask(task.id, task.isCompleted)}
                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
               />
               <span
